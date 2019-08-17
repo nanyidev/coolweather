@@ -1,5 +1,6 @@
 package com.coolweather;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
@@ -21,6 +22,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.coolweather.gson.Forecast;
 import com.coolweather.gson.Weather;
+import com.coolweather.service.AutoUpdateService;
 import com.coolweather.util.HttpUtil;
 import com.coolweather.util.Utility;
 
@@ -58,19 +60,19 @@ public class WeatherActivity extends AppCompatActivity {
             getWindow().setStatusBarColor(Color.TRANSPARENT);
         }
         setContentView(R.layout.activity_weather);
-        bingPicImg =(ImageView) findViewById(R.id.bing_pic_img);
-        weatherLayout = (ScrollView) findViewById(R.id.weather_layout);
-        titleCity = (TextView) findViewById(R.id.title_city);
-        titleUpdateTime = (TextView) findViewById(R.id.title_update_time);
-        degreeText = (TextView) findViewById(R.id.degree_text);
-        weatherInfoText = (TextView) findViewById(R.id.weather_info_text);
-        forecastLayout = (LinearLayout) findViewById(R.id.forecast_layout);
-        aqiText = (TextView) findViewById(R.id.aqi_text);
-        pm25Text = (TextView) findViewById(R.id.pm25_text);
-        comfortText = (TextView) findViewById(R.id.comfort_text);
-        carWashText = (TextView) findViewById(R.id.car_wash_text);
-        sportText = (TextView) findViewById(R.id.sport_text);
-        swipeRefresh=(SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
+        bingPicImg = findViewById(R.id.bing_pic_img);
+        weatherLayout =  findViewById(R.id.weather_layout);
+        titleCity =  findViewById(R.id.title_city);
+        titleUpdateTime =  findViewById(R.id.title_update_time);
+        degreeText =  findViewById(R.id.degree_text);
+        weatherInfoText =findViewById(R.id.weather_info_text);
+        forecastLayout =  findViewById(R.id.forecast_layout);
+        aqiText =  findViewById(R.id.aqi_text);
+        pm25Text =  findViewById(R.id.pm25_text);
+        comfortText =  findViewById(R.id.comfort_text);
+        carWashText =  findViewById(R.id.car_wash_text);
+        sportText =  findViewById(R.id.sport_text);
+        swipeRefresh= findViewById(R.id.swipe_refresh);
         navButton=findViewById(R.id.nav_button);
         drawerLayout=findViewById(R.id.drawer_layout);
         swipeRefresh.setColorSchemeResources(R.color.colorPrimary);
@@ -213,6 +215,7 @@ public class WeatherActivity extends AppCompatActivity {
         sportText.setText(sport);
         carWashText.setText(carWash);
         weatherLayout.setVisibility(View.VISIBLE);
-
+        Intent intent=new Intent(this, AutoUpdateService.class);
+        startService(intent);
     }
 }
