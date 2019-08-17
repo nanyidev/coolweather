@@ -1,6 +1,7 @@
 package com.coolweather;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -59,24 +60,38 @@ public class ChooseAreaFragment extends Fragment {
         listView.setAdapter(adapter);
         return view;
     }
-    //显示进度对话框
-    private void showProgressDialog()
-    {
-        if(progressDialog==null)
-        {
-            progressDialog=new ProgressDialog(getActivity());
-            progressDialog.setMessage("正在加载");
-            progressDialog.setCanceledOnTouchOutside(false);
-        }
-        progressDialog.show();
-    }
-    //关闭进度对话框
-    private void closeProgressDialog()
-    {
-        if(progressDialog!=null)
-        {
-            progressDialog.dismiss();
-        }
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (currentLevel == LEVEL_PROVINCE) {
+                    selectedProvince = provinceList.get(position);
+                    queryCities();
+                } else if (currentLevel == LEVEL_CITY) {
+                    selectedCity = cityList.get(position);
+                    queryCounties();
+                }else if(currentLevel==LEVEL_COUNTY){
+                    String weatherId=countyList.get(position).getWeatherId();
+                    Intent intent=new Intent(getActivity(),WeatherActivity.class);
+                    intent.putExtra("weather_id",weatherId);
+                    startActivity(intent);
+                    getActivity().finish();
+                }
+            }
+        });
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (currentLevel == LEVEL_COUNTY) {
+                    queryCities();
+                } else if (currentLevel == LEVEL_CITY) {
+                    queryProvinces();
+                }
+            }
+        });
+        queryProvinces();
     }
     //从服务器中查询市县数据
     public void queryFromServer(String address, final String type) {
@@ -86,9 +101,7 @@ public class ChooseAreaFragment extends Fragment {
             public void onResponse(Call call, Response response) throws IOException {
                 String responseText = response.body().string();
                 boolean result = false;
-                if ("province".equals(type)
-                ) {
-
+                if ("province".equals(type)) {
                     result = Utility.handleProvinceResponse(responseText);
                 } else if ("city".equals(type)) {
                     result = Utility.handleCityResponse(responseText, selectedProvince.getId());
@@ -96,6 +109,8 @@ public class ChooseAreaFragment extends Fragment {
                     result = Utility.handleCountyResponse(responseText, selectedCity.getId());
                 }
                 if (result) {
+                    if (getActivity() == null)
+                        return;
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -114,6 +129,8 @@ public class ChooseAreaFragment extends Fragment {
 
             @Override
             public void onFailure(Call call, IOException e) {
+                if (getActivity() == null)
+                    return;
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -142,36 +159,6 @@ public class ChooseAreaFragment extends Fragment {
             queryFromServer(address, "province");
         }
     }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (currentLevel == LEVEL_PROVINCE) {
-                    selectedProvince = provinceList.get(position);
-                    queryCities();
-                } else if (currentLevel == LEVEL_CITY) {
-                    selectedCity = cityList.get(position);
-                    queryCounties();
-                }
-            }
-        });
-        backButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (currentLevel == LEVEL_COUNTY) {
-                    queryCities();
-                } else if (currentLevel == LEVEL_CITY) {
-                    queryProvinces();
-                }
-            }
-        });
-        queryProvinces();
-    }
-
-
  //查询城市
     private void queryCities() {
         titleText.setText(selectedProvince.getProvinceName());
@@ -213,6 +200,24 @@ public class ChooseAreaFragment extends Fragment {
             queryFromServer(address, "county");
         }
     }
-
+    //显示进度对话框
+    private void showProgressDialog()
+    {
+        if(progressDialog==null)
+        {
+            progressDialog=new ProgressDialog(getActivity());
+            progressDialog.setMessage("正在加载……");
+            progressDialog.setCanceledOnTouchOutside(false);
+        }
+        progressDialog.show();
+    }
+    //关闭进度对话框
+    private void closeProgressDialog()
+    {
+        if(progressDialog!=null)
+        {
+            progressDialog.dismiss();
+        }
+    }
 
 }
